@@ -1,27 +1,49 @@
-import {defineStore} from 'pinia'
-import {ref} from 'vue'
+import { defineStore } from "pinia";
 
+export const useAppStore = defineStore("app", () => {
+  const getFrequencies = async () => {
+    const controller = new AbortController();
+    const signal = controller.signal;
+    setTimeout(() => controller.abort(), 60000);
 
-export const useAppStore =  defineStore('app', ()=>{
+    const URL = "http://127.0.0.1:5000/api/numberfrequency";
 
-    /*  
-    The composition API way of defining a Pinia store
-    ref() s become state properties
-    computed() s become getters
-    function() s become actions  
-    */ 
+    try {
+      const response = await fetch(URL, { method: "GET", signal });
+      if (response.ok) {
+        const data = await response.json();
+        if (data?.status === "found") return data.data;
+      } else {
+        console.log(await response.text());
+      }
+    } catch (err) {
+      console.error("getFrequencies error:", err.message);
+    }
+    return [];
+  };
 
-    // STATES 
-  
+  const getOnCount = async (LED_Name) => {
+    const controller = new AbortController();
+    const signal = controller.signal;
+    setTimeout(() => controller.abort(), 60000);
 
+    const URL = "http://127.0.0.1:5000/api/oncount";
+    const form = new FormData();
+    form.append("LED_Name", LED_Name);
 
-    // ACTIONS
-	
-	
-	
+    try {
+      const response = await fetch(URL, { method: "POST", body: form, signal });
+      if (response.ok) {
+        const data = await response.json();
+        if (data?.status === "found") return data.data;
+      } else {
+        console.log(await response.text());
+      }
+    } catch (err) {
+      console.error("getOnCount error:", err.message);
+    }
+    return 0;
+  };
 
-    return { 
-    // EXPORTS	
-        
-       }
-},{ persist: true  });
+  return { getFrequencies, getOnCount };
+});
